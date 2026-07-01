@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+    <title>Калибровка — насколько хорошо ты знаешь, что знаешь?</title>
+    <meta name="description" content="Калибровочная игра на критическое мышление: 15 утверждений, один слайдер — ответ и уверенность одним движением.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+    <!-- ═══ START ═══ -->
+    <div class="screen start-screen active" id="startScreen" style="position:relative;">
+        <div class="lang-toggle" id="langToggle">
+            <button class="lang-btn" data-lang="ru" id="langBtnRu">RU</button>
+            <button class="lang-btn" data-lang="en" id="langBtnEn">EN</button>
+        </div>
+        <div class="start-icon">🎯</div>
+        <div class="start-title" id="startTitle">Калибровка</div>
+        <div class="start-tagline" id="startTagline"></div>
+        <div class="start-desc" id="startDesc"></div>
+        <div class="start-how">
+            <h3 id="howTitle">Как играть</h3>
+            <div class="start-step"><div class="start-step-num">1</div><div class="start-step-text" id="how1"></div></div>
+            <div class="start-step"><div class="start-step-num">2</div><div class="start-step-text" id="how2"></div></div>
+            <div class="start-step"><div class="start-step-num">3</div><div class="start-step-text" id="how3"></div></div>
+        </div>
+        <button class="btn" id="startBtn">Начать</button>
+    </div>
+
+    <!-- ═══ FEED ═══ -->
+    <div class="screen" id="feedScreen">
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="top-bar-icon">🎯</div>
+                <div class="top-bar-title" id="topBarTitle">Калибровка</div>
+            </div>
+            <div class="top-bar-progress" id="topProgress">0 / 15</div>
+        </div>
+        <div class="top-progress-track"><div class="top-progress-fill" id="topProgressFill" style="width:0%"></div></div>
+        <div class="feed" id="feedContainer"></div>
+    </div>
+
+    <!-- ═══ RESULT ═══ -->
+    <div class="screen result-screen" id="resultScreen">
+        <div class="result-emoji" id="resultEmoji">🛡️</div>
+        <div class="result-title" id="resultTitle">Твоя калибровка</div>
+        <div class="result-score" id="resultScoreValue">0%</div>
+        <div class="result-stats">
+            <div class="result-stat-box">
+                <div class="result-stat-label" id="accuracyLabel">Точность</div>
+                <div class="result-stat-value" id="accuracyValue">0/15</div>
+            </div>
+            <div class="result-stat-box">
+                <div class="result-stat-label" id="calibrationLabel">Калибровка</div>
+                <div class="result-bar-track"><div class="result-bar-fill" id="calibBarFill" style="width:0%"></div></div>
+            </div>
+        </div>
+        <div class="archetype-card">
+            <div class="archetype-label" id="profileLabel">Твой профиль</div>
+            <div class="archetype-title" id="archetypeTitle">—</div>
+            <div class="archetype-desc" id="archetypeDesc"></div>
+        </div>
+        <div class="calib-chart" id="calibChart" style="display:none;">
+            <div class="calib-chart-title" id="chartTitle"></div>
+            <div id="calibChartRows"></div>
+        </div>
+        <div class="result-buttons">
+            <button class="btn" id="shareBtn">Поделиться</button>
+            <button class="btn btn-outline" id="restartBtn">Пройти ещё раз</button>
+        </div>
+    </div>
+</div>
+
+<script src="config.js"></script>
+<script src="i18n.js"></script>
+<script src="questions.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
