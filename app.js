@@ -3,6 +3,7 @@
 // ════════════════════════════════════════
 const STATE = {
   lang: 'ru',
+  current: 0,
   answers: [],
   playerId: null,
   sessionId: null,
@@ -10,7 +11,7 @@ const STATE = {
 };
 
 // ════════════════════════════════════════
-// COLOR HELPERS (red → gray → green, matches slider gradient)
+// COLOR HELPERS — false-ink → brass → true-ink
 // ════════════════════════════════════════
 function hexToRgb(hex) {
   const n = parseInt(hex.slice(1), 16);
@@ -18,11 +19,11 @@ function hexToRgb(hex) {
 }
 function lerp(a, b, r) { return Math.round(a + (b - a) * r); }
 function colorForRatio(ratio) {
-  const red = hexToRgb('#e5484d');
-  const gray = hexToRgb('#b0b3b8');
-  const green = hexToRgb('#30a46c');
-  const from = ratio <= 0.5 ? red : gray;
-  const to = ratio <= 0.5 ? gray : green;
+  const falseInk = hexToRgb('#7a3b34');
+  const brass = hexToRgb('#8c6a2f');
+  const trueInk = hexToRgb('#35604e');
+  const from = ratio <= 0.5 ? falseInk : brass;
+  const to = ratio <= 0.5 ? brass : trueInk;
   const t = ratio <= 0.5 ? ratio / 0.5 : (ratio - 0.5) / 0.5;
   const rgb = [lerp(from[0], to[0], t), lerp(from[1], to[1], t), lerp(from[2], to[2], t)];
   return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
@@ -61,14 +62,6 @@ function computeArchetype(meanConfidence, accuracyFrac) {
   if (Math.abs(gap) < 0.08) return 'calibrated';
   if (gap >= 0.08) return 'overconfident';
   return meanConfidence < 0.65 ? 'underconfidentCautious' : 'underconfidentSharp';
-}
-
-function emojiForScore(score) {
-  if (score >= 90) return '🛡️';
-  if (score >= 75) return '🎯';
-  if (score >= 60) return '🧭';
-  if (score >= 40) return '🌀';
-  return '🎲';
 }
 
 // ════════════════════════════════════════
@@ -140,90 +133,85 @@ function applyStartI18n() {
   document.getElementById('startBtn').textContent = t(lang, 'startBtn');
 }
 
-function updateProgress() {
-  const n = STATE.answers.length;
-  document.getElementById('topProgress').textContent = `${n} / ${QUESTIONS.length}`;
-  document.getElementById('topProgressFill').style.width = (n / QUESTIONS.length) * 100 + '%';
-}
-
 // ════════════════════════════════════════
 // GAME FLOW
 // ════════════════════════════════════════
 function startGame() {
   STATE.answers = [];
+  STATE.current = 0;
   STATE.sessionId = makeSessionId();
-  document.getElementById('feedContainer').innerHTML = '';
-  document.getElementById('topBarTitle').textContent = t(STATE.lang, 'brand');
+  document.getElementById('topWordmark').textContent = t(STATE.lang, 'brand');
   show('feedScreen');
-  updateProgress();
-  renderCard(0);
+  renderReading(0);
   logEvent('start', { sessionId: STATE.sessionId, playerId: STATE.playerId, lang: STATE.lang });
 }
 
-function cardTemplate(q, index, lang) {
+function updateHeader(index) {
+  document.getElementById('topProgress').textContent = `${String(index + 1).padStart(2, '0')} / ${QUESTIONS.length}`;
+  document.getElementById('topProgressFill').style.width = (index / QUESTIONS.length) * 100 + '%';
+}
+
+const TICK_COUNT = 20; // 21 ticks, every 5%
+
+function ticksHTML() {
+  let html = '';
+  for (let i = 0; i <= TICK_COUNT; i++) {
+    let cls = 'minor';
+    if (i === 0 || i === TICK_COUNT / 2 || i === TICK_COUNT) cls = 'major';
+    else if (i === TICK_COUNT / 4 || i === (TICK_COUNT * 3) / 4) cls = 'mid';
+    html += `<div class="tick ${cls}"></div>`;
+  }
+  return html;
+}
+
+function readingTemplate(q, index, lang) {
   const catName = CATEGORY_NAMES[q.category][lang];
   const isFirst = index === 0;
   return `
-  <div class="q-card" id="card-${index}" data-index="${index}">
-    <div class="q-body-wrap">
-      <div class="q-header">
-        <div class="q-avatar">${q.emoji}</div>
-        <div class="q-meta">
-          <div class="q-category">${catName}</div>
-          <div class="q-index">${index + 1} / ${QUESTIONS.length}</div>
-        </div>
+  <div class="reading-inner" id="readingInner">
+    <div class="reading-tag">${catName}</div>
+    <blockquote class="reading-statement">${q[lang].statement}</blockquote>
+    <div class="gauge">
+      <div class="gauge-readout-wrap"><div class="gauge-readout" id="gaugeReadout" style="left:50%">${t(lang, 'notSure')}</div></div>
+      <div class="gauge-track" id="gaugeTrack">
+        <div class="gauge-baseline"></div>
+        <div class="gauge-ticks">${ticksHTML()}</div>
+        <div class="gauge-needle" id="gaugeNeedle" style="left:50%"></div>
       </div>
-      <div class="q-statement">${q[lang].statement}</div>
-      <div class="bet-section">
-        <div class="confidence-badge-wrap">
-          <div class="confidence-badge" id="badge-${index}" style="left:50%">${t(lang, 'notSure')}</div>
-        </div>
-        <div class="slider-track" id="track-${index}">
-          <div class="slider-center-tick"></div>
-          <div class="slider-thumb" id="thumb-${index}"></div>
-        </div>
-        <div class="slider-labels"><span>${t(lang, 'falseLabel')}</span><span>${t(lang, 'trueLabel')}</span></div>
-        ${isFirst ? `<div class="drag-hint" id="dragHint">${t(lang, 'dragHint')}</div>` : ''}
-        <button class="ready-btn pulse" id="ready-${index}">${t(lang, 'readyBtn')}</button>
-      </div>
+      <div class="gauge-labels"><span>${t(lang, 'falseLabel')}</span><span>${t(lang, 'trueLabel')}</span></div>
+      ${isFirst ? `<div class="drag-hint" id="dragHint">${t(lang, 'dragHint')}</div>` : ''}
     </div>
-    <div class="reveal-section" id="reveal-${index}" style="display:none;"></div>
+    <button class="lock-btn" id="lockBtn">${t(lang, 'lockInBtn')}</button>
   </div>`;
 }
 
-function renderCard(index) {
+function renderReading(index) {
   const q = QUESTIONS[index];
-  const container = document.getElementById('feedContainer');
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = cardTemplate(q, index, STATE.lang);
-  const cardEl = wrapper.firstElementChild;
-  container.appendChild(cardEl);
-  attachCardHandlers(index);
-  cardEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const panel = document.getElementById('readingPanel');
+  panel.innerHTML = readingTemplate(q, index, STATE.lang);
+  updateHeader(index);
+  attachGaugeHandlers(index);
 }
 
-function attachCardHandlers(index) {
-  const track = document.getElementById(`track-${index}`);
-  const thumb = document.getElementById(`thumb-${index}`);
-  const badge = document.getElementById(`badge-${index}`);
-  const readyBtn = document.getElementById(`ready-${index}`);
+function attachGaugeHandlers(index) {
+  const q = QUESTIONS[index];
+  const track = document.getElementById('gaugeTrack');
+  const needle = document.getElementById('gaugeNeedle');
+  const readout = document.getElementById('gaugeReadout');
+  const lockBtn = document.getElementById('lockBtn');
   let v = 0;
+  let locked = false;
   let lastHapticLevel = 0;
   const HAPTIC_LEVELS = [60, 75, 90];
 
   function updateVisuals() {
     const pos = (v + 100) / 2;
-    thumb.style.left = pos + '%';
-    badge.style.left = Math.min(92, Math.max(8, pos)) + '%';
-    thumb.style.borderColor = colorForRatio(pos / 100);
-    if (v === 0) {
-      badge.textContent = t(STATE.lang, 'notSure');
-      badge.className = 'confidence-badge';
-    } else {
-      const confidence = Math.round(50 + Math.abs(v) / 2);
-      badge.textContent = confidence + '%';
-      badge.className = 'confidence-badge ' + (v > 0 ? 'side-true' : 'side-false');
-    }
+    needle.style.left = pos + '%';
+    readout.style.left = Math.min(94, Math.max(6, pos)) + '%';
+    const color = colorForRatio(pos / 100);
+    needle.style.background = color;
+    readout.style.color = color;
+    readout.textContent = v === 0 ? t(STATE.lang, 'notSure') : `${Math.round(50 + Math.abs(v) / 2)}% ${v > 0 ? t(STATE.lang, 'trueLabel') : t(STATE.lang, 'falseLabel')}`;
   }
 
   function maybeVibrate() {
@@ -243,79 +231,44 @@ function attachCardHandlers(index) {
     maybeVibrate();
   }
 
+  let dragging = false;
   track.addEventListener('pointerdown', (e) => {
-    track.classList.add('dragging');
+    if (locked) return;
+    dragging = true;
     track.setPointerCapture(e.pointerId);
     const hint = document.getElementById('dragHint');
     if (hint) hint.style.display = 'none';
     setFromClientX(e.clientX);
   });
   track.addEventListener('pointermove', (e) => {
-    if (!track.classList.contains('dragging')) return;
+    if (!dragging) return;
     setFromClientX(e.clientX);
   });
-  const endDrag = () => track.classList.remove('dragging');
+  const endDrag = () => { dragging = false; };
   track.addEventListener('pointerup', endDrag);
   track.addEventListener('pointercancel', endDrag);
 
-  readyBtn.addEventListener('click', () => {
-    readyBtn.classList.remove('pulse');
+  lockBtn.addEventListener('click', () => {
+    if (locked) return;
+    locked = true;
     track.style.pointerEvents = 'none';
-    reveal(index, v);
+    lockBtn.classList.add('is-captured');
+    lockBtn.textContent = t(STATE.lang, 'capturedLabel');
+    commitAnswer(index, v);
   });
 
   updateVisuals();
 }
 
-function reveal(index, v) {
+function commitAnswer(index, v) {
   const q = QUESTIONS[index];
-  const lang = STATE.lang;
   const result = computeScore(v, q.answer);
   STATE.answers.push({ index, v, ...result });
-  updateProgress();
-
-  document.getElementById(`card-${index}`).classList.add('answered');
-
-  const pos = (v + 100) / 2;
-  const truthPos = q.answer ? 100 : 0;
-  const icon = result.abstain ? '🤔' : result.correct ? '✅' : '❌';
-  const verdictText = t(lang, 'verdicts')[getVerdictKey(result)];
-  const pointsColor = colorForRatio(result.points / 100);
-  const yourBetText = result.abstain
-    ? `${t(lang, 'notSure')} (50%)`
-    : `${Math.round(result.p * 100)}% ${result.guessTrue ? t(lang, 'trueLabel') : t(lang, 'falseLabel')}`;
-  const truthText = q.answer ? t(lang, 'trueLabel') : t(lang, 'falseLabel');
-  const explainIntro = q.answer ? t(lang, 'correctAnswerTrue') : t(lang, 'correctAnswerFalse');
-  const isLast = index === QUESTIONS.length - 1;
-
-  const revealEl = document.getElementById(`reveal-${index}`);
-  revealEl.innerHTML = `
-    <div class="reveal-top">
-      <div class="reveal-icon">${icon}</div>
-      <div>
-        <div class="reveal-points" style="color:${pointsColor}">+${result.points} ${t(lang, 'pointsWord')}</div>
-        <div class="reveal-verdict">${verdictText}</div>
-      </div>
-    </div>
-    <div class="feedback-bar">
-      <div class="feedback-bar-marker user-m" style="left:${pos}%"></div>
-      <div class="feedback-bar-marker truth-m" style="left:${truthPos}%"></div>
-    </div>
-    <div class="feedback-bar-legend">
-      <div class="legend-item"><span class="legend-dot" style="background:var(--accent-dark)"></span>${t(lang, 'yourBet')}: ${yourBetText}</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--text)"></span>${t(lang, 'truth')}: ${truthText}</div>
-    </div>
-    <div class="reveal-explain"><strong>${explainIntro}.</strong> ${q[lang].explain}</div>
-    <button class="next-btn" id="next-${index}">${isLast ? t(lang, 'finishBtn') : t(lang, 'nextBtn')}</button>
-  `;
-  revealEl.style.display = 'block';
-  document.getElementById(`next-${index}`).addEventListener('click', () => onNext(index));
-  revealEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
   logEvent('answer', {
     sessionId: STATE.sessionId,
     playerId: STATE.playerId,
-    lang,
+    lang: STATE.lang,
     questionId: q.id,
     category: q.category,
     sliderValue: v,
@@ -326,14 +279,20 @@ function reveal(index, v) {
     abstain: result.abstain,
     points: result.points,
   });
-}
 
-function onNext(index) {
-  if (index + 1 < QUESTIONS.length) {
-    renderCard(index + 1);
-  } else {
-    showResults();
-  }
+  const inner = document.getElementById('readingInner');
+  const isLast = index + 1 >= QUESTIONS.length;
+  setTimeout(() => {
+    inner.classList.add('leaving');
+    setTimeout(() => {
+      if (isLast) {
+        showResults();
+      } else {
+        STATE.current = index + 1;
+        renderReading(STATE.current);
+      }
+    }, 150);
+  }, 450);
 }
 
 function renderCalibChart(lang, answers) {
@@ -352,7 +311,11 @@ function renderCalibChart(lang, answers) {
     });
     if (!inBucket.length) return;
     const real = Math.round((inBucket.filter((a) => a.correct).length / inBucket.length) * 100);
-    rows.push(`<div class="calib-chart-row">${t(lang, 'chartRow')(lo, hi, real)}</div>`);
+    rows.push(`
+      <div class="cert-chart-row">
+        <div class="cert-chart-row-text">${t(lang, 'chartRow')(lo, hi, real)}</div>
+        <div class="cert-chart-bar-track"><div class="cert-chart-bar-fill" style="width:${real}%"></div></div>
+      </div>`);
   });
   const chart = document.getElementById('calibChart');
   if (rows.length) {
@@ -362,6 +325,36 @@ function renderCalibChart(lang, answers) {
   } else {
     chart.style.display = 'none';
   }
+}
+
+function certRowHTML(a, lang) {
+  const q = QUESTIONS[a.index];
+  const catName = CATEGORY_NAMES[q.category][lang];
+  const betText = a.abstain
+    ? t(lang, 'notSure')
+    : `${Math.round(a.p * 100)}% ${a.guessTrue ? t(lang, 'trueLabel') : t(lang, 'falseLabel')}`;
+  const truthText = q.answer ? t(lang, 'trueLabel') : t(lang, 'falseLabel');
+  const stampClass = a.abstain ? 'honest' : a.correct ? 'hit' : 'miss';
+  const stampWord = t(lang, 'stamps')[a.abstain ? 'honest' : a.correct ? 'hit' : 'miss'];
+  const explainIntro = q.answer ? t(lang, 'correctAnswerTrue') : t(lang, 'correctAnswerFalse');
+  const remark = t(lang, 'verdicts')[getVerdictKey(a)];
+
+  return `
+  <div class="cert-row">
+    <div class="cert-row-head">
+      <span class="cert-row-index">${String(a.index + 1).padStart(2, '0')}</span>
+      <span class="cert-row-tag">${catName}</span>
+    </div>
+    <div class="cert-row-statement">${q[lang].statement}</div>
+    <div class="cert-row-data">
+      <span>${t(lang, 'colBet')}: <b>${betText}</b></span>
+      <span>${t(lang, 'colTruth')}: <b>${truthText}</b></span>
+      <span>${t(lang, 'colScore')}: <b>${a.points}</b></span>
+      <span class="stamp ${stampClass}">${stampWord}</span>
+    </div>
+    <div class="cert-row-remark">${remark}.</div>
+    <div class="cert-row-explain">${explainIntro} ${q[lang].explain}</div>
+  </div>`;
 }
 
 function showResults() {
@@ -376,19 +369,19 @@ function showResults() {
   const archetype = t(lang, 'archetypes')[archetypeKey];
 
   show('resultScreen');
-  document.getElementById('resultTitle').textContent = t(lang, 'resultTitle');
+  document.getElementById('certSerial').textContent = `${t(lang, 'certSerialLabel')} ${STATE.sessionId.slice(2, 8).toUpperCase()}`;
+  document.getElementById('certTitleText').textContent = t(lang, 'certTitle');
+  document.getElementById('resultTitleLabel').textContent = t(lang, 'resultTitle');
   document.getElementById('resultScoreValue').textContent = avgPoints + '%';
-  document.getElementById('resultEmoji').textContent = emojiForScore(avgPoints);
+  document.getElementById('archetypeStamp').textContent = archetype.title;
   document.getElementById('accuracyLabel').textContent = t(lang, 'accuracyLabel');
   document.getElementById('accuracyValue').textContent = `${correctCount}/${total}`;
   document.getElementById('calibrationLabel').textContent = t(lang, 'calibrationLabel');
-  const fill = document.getElementById('calibBarFill');
-  fill.style.width = avgPoints + '%';
-  fill.style.background = colorForRatio(avgPoints / 100);
-  document.getElementById('profileLabel').textContent = t(lang, 'profileLabel');
-  document.getElementById('archetypeTitle').textContent = archetype.title;
+  document.getElementById('calibValue').textContent = avgPoints + '%';
   document.getElementById('archetypeDesc').textContent = archetype.desc;
   renderCalibChart(lang, answers);
+  document.getElementById('logLabel').textContent = t(lang, 'logLabel');
+  document.getElementById('certTable').innerHTML = answers.map((a) => certRowHTML(a, lang)).join('');
   document.getElementById('shareBtn').textContent = t(lang, 'shareBtn');
   document.getElementById('restartBtn').textContent = t(lang, 'restartBtn');
 

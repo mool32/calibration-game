@@ -3,7 +3,6 @@ const QUESTIONS = [
   {
     id: 1,
     category: 'biology',
-    emoji: '🦤',
     answer: false,
     ru: {
       statement: 'Страусы прячут голову в песок при опасности.',
@@ -17,7 +16,6 @@ const QUESTIONS = [
   {
     id: 2,
     category: 'space',
-    emoji: '🪐',
     answer: true,
     ru: {
       statement: 'Сатурн настолько лёгкий, что не утонул бы в воде — он бы всплыл.',
@@ -31,7 +29,6 @@ const QUESTIONS = [
   {
     id: 3,
     category: 'history',
-    emoji: '🏺',
     answer: true,
     ru: {
       statement: 'Клеопатра жила ближе по времени к первому айфону, чем к постройке пирамиды Хеопса.',
@@ -45,7 +42,6 @@ const QUESTIONS = [
   {
     id: 4,
     category: 'biology',
-    emoji: '🩸',
     answer: false,
     ru: {
       statement: 'Кровь человека в венах синяя, пока не соприкоснётся с кислородом.',
@@ -59,7 +55,6 @@ const QUESTIONS = [
   {
     id: 5,
     category: 'history',
-    emoji: '🏜️',
     answer: true,
     ru: {
       statement: 'В Африке есть страна, где пирамид больше, чем в Египте.',
@@ -73,7 +68,6 @@ const QUESTIONS = [
   {
     id: 6,
     category: 'botany',
-    emoji: '🍌',
     answer: true,
     ru: {
       statement: 'Банан с точки зрения ботаники — это ягода, а клубника — нет.',
@@ -87,7 +81,6 @@ const QUESTIONS = [
   {
     id: 7,
     category: 'history',
-    emoji: '🎖️',
     answer: false,
     ru: {
       statement: 'Наполеон был необычно низкого роста.',
@@ -101,7 +94,6 @@ const QUESTIONS = [
   {
     id: 8,
     category: 'biology',
-    emoji: '🍄',
     answer: true,
     ru: {
       statement: 'Человек и гриб-шампиньон — более близкие родственники, чем гриб и растение.',
@@ -115,7 +107,6 @@ const QUESTIONS = [
   {
     id: 9,
     category: 'physics',
-    emoji: '🪟',
     answer: false,
     ru: {
       statement: 'Стекло в старинных окнах толще снизу, потому что за века медленно стекло вниз.',
@@ -129,7 +120,6 @@ const QUESTIONS = [
   {
     id: 10,
     category: 'biology',
-    emoji: '🐜',
     answer: true,
     ru: {
       statement: 'Если сложить всех муравьёв Земли, они весят примерно столько же, сколько всё человечество.',
@@ -143,7 +133,6 @@ const QUESTIONS = [
   {
     id: 11,
     category: 'space',
-    emoji: '🚀',
     answer: false,
     ru: {
       statement: 'В космосе астронавты невесомы, потому что там нет гравитации.',
@@ -157,7 +146,6 @@ const QUESTIONS = [
   {
     id: 12,
     category: 'history',
-    emoji: '🏛️',
     answer: true,
     ru: {
       statement: 'Оксфордский университет старше, чем империя ацтеков.',
@@ -171,7 +159,6 @@ const QUESTIONS = [
   {
     id: 13,
     category: 'biology',
-    emoji: '🐠',
     answer: false,
     ru: {
       statement: 'Золотая рыбка помнит события лишь несколько секунд.',
@@ -185,7 +172,6 @@ const QUESTIONS = [
   {
     id: 14,
     category: 'space',
-    emoji: '☀️',
     answer: true,
     ru: {
       statement: 'Венера в среднем горячее Меркурия, хотя дальше от Солнца.',
@@ -199,7 +185,6 @@ const QUESTIONS = [
   {
     id: 15,
     category: 'physics',
-    emoji: '💡',
     answer: false,
     ru: {
       statement: 'Расстояние, которое свет проходит за одну секунду, больше, чем от Земли до Луны.',
