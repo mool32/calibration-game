@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
     <title>Калибровка — насколько хорошо ты знаешь, что знаешь?</title>
-    <meta name="description" content="Калибровочная игра на критическое мышление: 15 утверждений, один жест — ответ и уверенность одновременно. Полный разбор — сертификатом в конце.">
+    <meta name="description" content="Игра на критическое мышление: 15 утверждений, один жест задаёт и ответ, и уверенность. Здесь выигрывает честность с собой, а не эрудиция.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;0,800;1,500&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
 <body>
 <div class="app">
 
-    <!-- ═══ START / COVER SHEET ═══ -->
+    <!-- ═══ START / WARM-UP ═══ -->
     <div class="screen start-screen active" id="startScreen">
         <div class="lang-toggle" id="langToggle">
             <button class="lang-btn" data-lang="ru" id="langBtnRu">RU</button>
@@ -21,35 +21,24 @@
             <button class="lang-btn" data-lang="en" id="langBtnEn">EN</button>
         </div>
 
-        <div class="start-mark" aria-hidden="true">
-            <svg viewBox="0 0 32 32" width="30" height="30">
-                <circle cx="16" cy="16" r="12.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
-                <line x1="16" y1="2.2" x2="16" y2="5.4" stroke="currentColor" stroke-width="1.4"/>
-                <line x1="16" y1="26.6" x2="16" y2="29.8" stroke="currentColor" stroke-width="1.4"/>
-                <line x1="2.2" y1="16" x2="5.4" y2="16" stroke="currentColor" stroke-width="1.4"/>
-                <line x1="26.6" y1="16" x2="29.8" y2="16" stroke="currentColor" stroke-width="1.4"/>
-                <line x1="16" y1="16" x2="23" y2="9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-                <circle cx="16" cy="16" r="1.8" fill="currentColor"/>
-            </svg>
+        <div class="cover">
+            <h1 class="cover-title">КАЛИБРОВКА</h1>
+            <p class="cover-subtitle" id="coverSubtitle">Здесь выигрывает честность с собой, а не эрудиция.</p>
         </div>
-        <div class="start-wordmark" id="startTitle">Калибровка</div>
 
-        <h1 class="start-tagline" id="startTagline"></h1>
-        <p class="start-desc" id="startDesc"></p>
+        <div class="warmup" id="warmupBlock">
+            <div class="warmup-label" id="warmupLabel">Разминка</div>
+            <blockquote class="statement warmup-statement" id="warmupStatement"></blockquote>
+            <div class="gauge" id="warmupGauge"></div>
+            <div class="warmup-hint" id="warmupHint"></div>
+        </div>
 
-        <div class="start-rule"></div>
+        <div class="reveal warmup-reveal" id="warmupReveal" hidden></div>
 
-        <ol class="start-how" id="startHow">
-            <li><h2 class="how-title" id="howTitle">Как играть</h2></li>
-            <li><span class="how-num">01</span><span class="how-text" id="how1"></span></li>
-            <li><span class="how-num">02</span><span class="how-text" id="how2"></span></li>
-            <li><span class="how-num">03</span><span class="how-text" id="how3"></span></li>
-        </ol>
-
-        <button class="lock-btn start-btn" id="startBtn">Начать</button>
+        <button class="lock-btn start-btn" id="startBtn" hidden>Начать</button>
     </div>
 
-    <!-- ═══ READING (one statement at a time) ═══ -->
+    <!-- ═══ READING ═══ -->
     <div class="screen" id="feedScreen">
         <header class="doc-header">
             <div class="doc-header-row">
@@ -61,35 +50,36 @@
         <main class="reading" id="readingPanel"></main>
     </div>
 
-    <!-- ═══ CERTIFICATE ═══ -->
+    <!-- ═══ RESULT ═══ -->
     <div class="screen result-screen" id="resultScreen">
-        <div class="cert">
-            <div class="cert-serial" id="certSerial">№ 000000</div>
-            <div class="cert-title" id="certTitleText">Сертификат калибровки</div>
+        <div class="result">
+            <div class="result-kicker" id="resultKicker">Готово</div>
 
-            <div class="cert-score-block">
-                <div class="cert-score-label" id="resultTitleLabel">Итоговая точность прибора</div>
-                <div class="cert-score" id="resultScoreValue">0%</div>
-                <div class="cert-stamp" id="archetypeStamp">—</div>
+            <div class="result-hero">
+                <div class="result-score" id="resultScoreValue">0%</div>
+                <div class="result-score-word" id="calibrationWord">Твоя калибровка</div>
+            </div>
+            <p class="result-explain" id="scoreExplain"></p>
+            <div class="result-accuracy" id="accuracyLine"></div>
+
+            <div class="archetype">
+                <div class="archetype-label" id="profileLabel">Кто ты по итогу</div>
+                <div class="archetype-title" id="archetypeTitle">—</div>
+                <div class="archetype-desc" id="archetypeDesc"></div>
             </div>
 
-            <div class="cert-stats">
-                <div class="cert-stat-row"><span id="accuracyLabel">Точность</span><span class="mono" id="accuracyValue">0/15</span></div>
-                <div class="cert-stat-row"><span id="calibrationLabel">Калибровка</span><span class="mono" id="calibValue">0%</span></div>
-            </div>
+            <section class="reliability" id="reliabilityBlock" hidden>
+                <h2 class="block-title" id="reliabilityTitle"></h2>
+                <div id="reliabilityRows"></div>
+            </section>
 
-            <p class="cert-archetype-desc" id="archetypeDesc"></p>
+            <section class="facts">
+                <h2 class="block-title" id="factsTitle">Разбор</h2>
+                <div id="factsList"></div>
+            </section>
 
-            <div class="cert-chart" id="calibChart" style="display:none;">
-                <div class="cert-section-label" id="chartTitle"></div>
-                <div id="calibChartRows"></div>
-            </div>
-
-            <div class="cert-section-label" id="logLabel">Журнал измерений</div>
-            <div class="cert-table" id="certTable"></div>
-
-            <div class="cert-actions">
-                <button class="btn-outline-mono" id="shareBtn">Поделиться</button>
+            <div class="result-actions">
+                <button class="btn-ghost" id="shareBtn">Поделиться</button>
                 <button class="lock-btn" id="restartBtn">Ещё раз</button>
             </div>
         </div>

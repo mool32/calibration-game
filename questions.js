@@ -196,3 +196,17 @@ const QUESTIONS = [
     },
   },
 ];
+
+// Warm-up shown on the cover: teaches the gesture + the reveal format. Not scored.
+const WARMUP = {
+  category: 'biology',
+  answer: false,
+  ru: {
+    statement: 'Быки приходят в ярость от красного цвета.',
+    explain: 'Миф. Быки не различают красный — их провоцирует движение мулеты, а не её цвет. Тот же взмах белой тканью работает так же.',
+  },
+  en: {
+    statement: 'Bulls are enraged by the colour red.',
+    explain: "Myth. Bulls are red-green colourblind — it's the movement of the cape that provokes them, not its colour. A white cape works just as well.",
+  },
+};
